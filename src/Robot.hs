@@ -6,6 +6,10 @@ module Robot ( readLDM
 import Control.Monad.State
 import Parsing 
 import Data.Bits (Bits(xor))
+import Data.Char (isDigit)
+import Data.Type.Coercion (sym)
+import Control.Applicative (Alternative(empty))
+import Data.Semigroup (Min(Min))
 
 
 
@@ -54,24 +58,32 @@ instance Show Element where
 
 
 pElement :: Parser Char Element
-pElement = sat 
+pElement = wichElement <$> satElement
 
-whichElement :: Char -> Element
-whichElement 'E' = Entry
-whichElement '%' = Wall
-whichElement '.' = Earth
-whichElement '*' = Rock
-whichElement '?' = Material 50
-whichElement ':' = Material 100
-whichElement ';' = Material 150
-whichElement '$' = Material 1
-whichElement _   = error "Deu ruim!"
+isElement :: Char -> Bool
+isElement a
+  | a == ' ' || a == 'E' || a == '%' || a == '.' || a == '*' || a == '?' ||  a == ':' ||  a == ';' ||  a == '$' = True
+  |otherwise = False
 
+satElement :: Parser Char Char
+satElement = sat isElement
+
+wichElement :: Char -> Element
+wichElement a
+  | a == 'E' = Entry
+  | a == '%' = Wall
+  | a == '.' = Earth
+  | a == '*' = Rock
+  | a == '?' = Material 50
+  | a == ':' = Material 100
+  | a == ';' = Material 150
+  | a == '$' = Material 1
+  | otherwise = Empty
 
 type Line = [Element]
 
 data Mine = Mine {
-              lines    :: Int,
+              linhas    :: Int,
               columns  :: Int,
               elements :: [Line]
             } deriving (Eq, Ord)
@@ -79,9 +91,29 @@ data Mine = Mine {
 instance Show Mine where
   show = undefined
 
+sampleLine :: Line 
+sampleLine = [Wall, Wall, Entry, Wall, Wall, Wall]
+
+sampleArrayofLines :: [Line]
+sampleArrayofLines = [sampleLine, sampleLine, sampleLine]
+
+sampleMine :: Mine
+sampleMine = Mine{
+              linhas = 3,
+              columns = 6,
+              elements = sampleArrayofLines
+}
 
 validMine :: Mine -> Bool
-validMine = undefined
+validMine m
+  | length (elements m) == linhas m && lineChecker (elements m) (columns m) = True 
+  | otherwise = False  
+
+lineChecker :: [Line] -> Int -> Bool 
+lineChecker [] _ = True  
+lineChecker (x:xs) a
+  | length x == a = lineChecker xs a
+  | otherwise = False  
 
 pLine :: Parser Char Line
 pLine = undefined
