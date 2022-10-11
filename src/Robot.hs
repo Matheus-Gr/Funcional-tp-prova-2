@@ -176,7 +176,7 @@ readLCR = undefined
 
 
 -- Language: haskell
-
+-- exercicio 5
 exampleMine :: Mine
 exampleMine = Mine {
   linhas = 3,
@@ -186,3 +186,6 @@ exampleMine = Mine {
              , [Wall, Wall, Wall, Wall, Wall, Wall]
              ]
 }
+
+
+-- exercicio 7
