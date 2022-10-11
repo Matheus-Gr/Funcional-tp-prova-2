@@ -55,7 +55,15 @@ pElement = wichElement <$> satElement
 
 isElement :: Char -> Bool
 isElement a
-  | a == ' ' || a == 'E' || a == '%' || a == '.' || a == '*' || a == '?' ||  a == ':' ||  a == ';' ||  a == '$' = True
+  | a == ' ' ||
+    a == 'E' ||
+    a == '%' ||
+    a == '.' ||
+    a == '*' ||
+    a == '?' ||
+    a == ':' ||
+    a == ';' ||  
+    a == '$' = True
   |otherwise = False
 
 satElement :: Parser Char Char
@@ -83,7 +91,7 @@ data Mine = Mine {
 
 instance Show Mine where
   show (Mine _ _ []) = [] 
-  show (Mine l c (e:es)) = show e ++ "\n" ++ show (Mine l c es)
+  show (Mine l c e) = unlines $ map (unwords . map show) e
 
 validMine :: Mine -> Bool
 validMine m

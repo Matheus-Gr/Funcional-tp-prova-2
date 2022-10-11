@@ -21,7 +21,8 @@ module Parsing  ( Parser
                 , parenthesized
                 , endBy
                 , chainl
-                , chainr) where
+                , chainr
+                , runParser) where
 
 import Data.Char
 
