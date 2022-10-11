@@ -237,3 +237,19 @@ readLDM = undefined
 
 readLCR :: String -> IO (Either String [Instr])
 readLCR = undefined
+
+
+-- Language: haskell
+-- exercicio 5
+exampleMine :: Mine
+exampleMine = Mine {
+  linhas = 3,
+  columns = 6,
+  elements = [ [Wall, Wall, Entry, Wall, Wall, Wall]
+             , [Wall, Earth, Earth, Earth, Earth, Wall]
+             , [Wall, Wall, Wall, Wall, Wall, Wall]
+             ]
+}
+
+
+-- exercicio 7
