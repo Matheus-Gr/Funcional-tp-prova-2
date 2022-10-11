@@ -23,13 +23,6 @@ data Robot = Robot {
                 collected :: Material
               } deriving (Eq, Ord)
 
-sampleRobot :: Robot
-sampleRobot = Robot {
-                energy = 100,
-                position = (1,1),
-                collected = 0
-              }
-
 instance Show Robot where
     show (Robot energy position collected) = 
         "Energy:" ++ show energy ++ "\n" ++
@@ -91,22 +84,14 @@ data Mine = Mine {
 instance Show Mine where
   show = undefined
 
-sampleLine :: Line 
-sampleLine = [Wall, Wall, Entry, Wall, Wall, Wall]
-
-sampleArrayofLines :: [Line]
-sampleArrayofLines = [sampleLine, sampleLine, sampleLine]
-
-sampleMine :: Mine
-sampleMine = Mine{
-              linhas = 3,
-              columns = 6,
-              elements = sampleArrayofLines
-}
-
 validMine :: Mine -> Bool
 validMine m
-  | length (elements m) == linhas m && lineChecker (elements m) (columns m) = True 
+  | length (elements m) == linhas m &&
+  lineChecker (elements m) (columns m) &&
+  (leftColumnHasEntry (elements m) ||
+  rightColumnHasEntry (elements m) ||
+  topLineHasEntry (elements m) ||
+  bottomLineHasEntry (elements m)) = True 
   | otherwise = False  
 
 lineChecker :: [Line] -> Int -> Bool 
@@ -114,6 +99,85 @@ lineChecker [] _ = True
 lineChecker (x:xs) a
   | length x == a = lineChecker xs a
   | otherwise = False  
+
+lineHasEntry :: Line -> Bool
+lineHasEntry [] = False  
+lineHasEntry (x:xs)
+  | x == Entry = True
+  | otherwise = lineHasEntry xs
+
+firstElementIsEntry :: Line -> Bool
+firstElementIsEntry [] = False 
+firstElementIsEntry (x:xs)
+  | x == Entry = True 
+  | otherwise = False 
+
+lastElementIsEntry :: Line -> Bool
+lastElementIsEntry [] = False
+lastElementIsEntry (x:xs)
+  | last xs == Entry = True 
+  | otherwise = False 
+
+leftColumnHasEntry :: [Line] -> Bool 
+leftColumnHasEntry [] = False  
+leftColumnHasEntry (x:xs)
+  | firstElementIsEntry x = True
+  | otherwise = leftColumnHasEntry xs 
+
+rightColumnHasEntry :: [Line] -> Bool 
+rightColumnHasEntry [] = False  
+rightColumnHasEntry (x:xs)
+  | lastElementIsEntry x = True
+  | otherwise = rightColumnHasEntry xs 
+
+topLineHasEntry :: [Line] -> Bool
+topLineHasEntry [] = False 
+topLineHasEntry (x:xs)
+  | lineHasEntry x = True  
+  | otherwise = False 
+
+bottomLineHasEntry :: [Line] -> Bool
+bottomLineHasEntry [] = False 
+bottomLineHasEntry (x:xs)
+  | lineHasEntry (last xs) = True  
+  | otherwise = False 
+
+-- SAMPLES AREA
+sampleRobot :: Robot
+sampleRobot = Robot {
+                energy = 100,
+                position = (1,1),
+                collected = 0
+}
+
+sLine1 :: Line 
+sLine1 = [Wall, Wall, Entry, Wall, Wall, Wall]
+
+sLine2 :: Line 
+sLine2 = [Entry, Wall, Wall, Wall, Wall, Wall]
+
+sLine3 :: Line 
+sLine3 = [Wall, Wall, Wall, Wall, Wall, Entry]
+
+sLine4 :: Line 
+sLine4 = [Wall, Wall, Wall, Wall, Wall, Wall]
+
+sArrayofLines :: [Line]
+sArrayofLines = [sLine1, sLine4, sLine4]
+
+sAL1 :: [Line]
+sAL1 = [sLine1, sLine4, sLine4, sLine4]
+
+sAL2 :: [Line]
+sAL2 = [sLine4, sLine4, sLine4, sLine1]
+
+sMine :: Mine
+sMine = Mine{
+  linhas = 3,
+  columns = 6,
+  elements = sArrayofLines
+}
+-- END OF SAMPLES AREA
 
 pLine :: Parser Char Line
 pLine = undefined
