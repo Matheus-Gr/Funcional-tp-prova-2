@@ -189,10 +189,10 @@ sMine = Mine{
 -- END OF SAMPLES AREA
 
 pLine :: Parser Char Line
-pLine = undefined
+pLine = greedy pElement
 
 pMine :: Parser Char Mine
-pMine = undefined
+pMine = undefined 
 
 data Instr = L -- move para esquerda
           | R -- move para direita
