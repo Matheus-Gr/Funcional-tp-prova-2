@@ -79,7 +79,8 @@ wichElement a
   | a == ':' = Material 100
   | a == ';' = Material 150
   | a == '$' = Material 1
-  | otherwise = Empty
+  | a == ' ' = Empty
+  | otherwise = error "Elemento invalido"
 
 type Line = [Element]
 
@@ -192,7 +193,13 @@ pLine :: Parser Char Line
 pLine = greedy pElement
 
 pMine :: Parser Char Mine
-pMine = undefined 
+pMine = f <$> endBy pLine (symbol '\n')
+  where
+    f a = Mine l c e
+      where 
+        e = filter (/= []) a
+        l = length e
+        c = length (head e)
 
 data Instr = L -- move para esquerda
           | R -- move para direita
@@ -203,7 +210,30 @@ data Instr = L -- move para esquerda
           deriving (Eq,Ord,Show,Enum)
 
 pInstr :: Parser Char Instr
-pInstr = undefined
+pInstr = wichIstr <$> satIstr
+
+isIstr :: Char -> Bool
+isIstr a
+  | a == 'L' ||
+    a == 'R' ||
+    a == 'U' ||
+    a == 'D' ||
+    a == 'C' ||
+    a == 'S' = True
+  |otherwise = False
+
+satIstr :: Parser Char Char
+satIstr = sat isIstr
+
+wichIstr :: Char -> Instr
+wichIstr a
+  | a == 'L' = L
+  | a == 'R' = R
+  | a == 'U' = U
+  | a == 'D' = D
+  | a == 'C' = C
+  | a == 'S' = S
+  | otherwise = error "Instrução inválida"
 
 pProgram :: Parser Char [Instr]
 pProgram = undefined
