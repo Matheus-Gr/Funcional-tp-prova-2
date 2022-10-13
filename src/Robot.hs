@@ -280,3 +280,32 @@ incEnergy :: ConfM ()
 incEnergy = do
   (r, m) <- get
   put (r {energy = energy r + 1}, m)
+
+-- exercicio 11
+
+valid :: Instr -> ConfM Bool
+valid L = do
+  (r, m) <- get
+  return (position r > 1)
+
+valid R = do 
+  (r, m) <- get
+  return (position r < columns m)
+
+valid U = do 
+  (r, m) <- get
+  return (position r > 1)
+
+valid D = do 
+  (r, m) <- get
+  return (position r < linhas m)
+
+valid C = do 
+  (r, m) <- get
+  return (elements m !! (position r) !! (position r) == Earth)
+
+valid S = do
+  (r, m) <- get
+  return (energy r < 100)
+
+-- exercicio 12
