@@ -192,7 +192,13 @@ pLine :: Parser Char Line
 pLine = greedy pElement
 
 pMine :: Parser Char Mine
-pMine = undefined 
+pMine = f <$> endBy pLine (symbol '\n')
+  where
+    f a = Mine l c e
+      where 
+        e = filter (/= []) a
+        l = length e
+        c = length (head e)
 
 data Instr = L -- move para esquerda
           | R -- move para direita
