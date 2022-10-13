@@ -253,3 +253,30 @@ exampleMine = Mine {
 
 
 -- exercicio 7
+show :: Mine -> 
+show = LDR
+
+--exercicio 9
+pProgram :: Parser Char  Instr
+pProgram = LDR{pInstr} | RDR{pInstr} | UDR{pInstr} | DDR{pInstr} | CDR{pInstr} | SDR{pInstr}
+
+-- exercicio 10
+current :: ConfM Point
+current =  do
+  (r, m) <- get
+  return (position r)
+
+mine :: ConfM Mine
+mine =  do
+  (r, m) <- get
+  return m
+
+enoughEnergy :: Int -> ConfM Bool
+enoughEnergy n = do
+  (r, m) <- get
+  return (energy r >= n)
+
+incEnergy :: ConfM ()
+incEnergy = do
+  (r, m) <- get
+  put (r {energy = energy r + 1}, m)
