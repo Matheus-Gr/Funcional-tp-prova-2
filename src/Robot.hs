@@ -239,7 +239,7 @@ incEnergy = do
 -- valid S = do (r, m) <- get; return (energy r < 100)
 
 updateMine :: Instr -> ConfM ()
-updateMine = undefined
+updateMine 
 
 exec :: Instr -> ConfM ()
 exec = undefined
@@ -366,7 +366,13 @@ run :: [Instr] -> Mine -> Mine
 run [] m = m
 run (i:is) m = run is (exec i m)
 
--- exercicio 16
+--exercicio 16
+readLDM :: String -> IO (Either String Mine)
+readLDM = do 
+  file <- readFile "file.txt"
+  return (parseLDM file)
+
+-- exercicio 17
 readLCR :: String -> IO (Either String [Instr])
 readLCR = do 
   file <- readFile "instrucoes.txt"
