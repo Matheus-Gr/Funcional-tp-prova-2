@@ -10,7 +10,12 @@ import Data.Char (isDigit)
 import Data.Type.Coercion (sym)
 import Control.Applicative (Alternative(empty))
 import Data.Semigroup (Min(Min))
-
+import Data.List (elemIndex)
+import Data.Maybe (fromMaybe)
+import System.Posix.Internals (fileType)
+import Data.String (IsString)
+import Control.Monad.Except (ExceptT(ExceptT))
+import Control.Exception
 
 type Fuel = Int
 type Point = (Int,Int)
@@ -91,6 +96,7 @@ data Mine = Mine {
               elements :: [Line]
             } deriving (Eq, Ord)
 
+--Exercício: 7
 instance Show Mine where
   show (Mine _ _ []) = [] 
   show (Mine l c e) = unlines $ map (unwords . map show) e
@@ -210,6 +216,7 @@ type Conf = (Robot, Mine)
 
 type ConfM a = State Conf a
 
+--Exercício: 10 
 current :: ConfM Point
 current = do
   (r, m) <- get
@@ -230,61 +237,104 @@ incEnergy = do
   (r, m) <- get
   put (r {energy = energy r + 1}, m)
 
--- valid :: Instr -> ConfM Bool
--- valid L = do (r, m) <- get; return (position r > 1)
--- valid R = do (r, m) <- get; return (position r < columns m)
--- valid U = do (r, m) <- get; return (position r > 1)
--- valid D = do (r, m) <- get; return (position r < linhas m)
--- valid C = do (r, m) <- get; return (elements m !! (position r) !! (position r) == Earth)
--- valid S = do (r, m) <- get; return (energy r < 100)
+--Exercício: 11
+valid :: Instr -> ConfM Bool
+valid L = do
+  m <- mine
+  (x,y) <- current;
+  e <- elementIs (x-1, y)
+  z <- enoughEnergy (energyCost e)
+  return ((x > 1) && z);
+valid R = do
+  (x,y) <- current;
+  m <- mine
+  e <- elementIs (x+1, y)
+  z <- enoughEnergy (energyCost e)
+  return ((x > 1) && z);
+valid U = do
+  (x,y) <- current;
+  m <- mine
+  e <- elementIs (x,y+1)
+  z <- enoughEnergy (energyCost e)
+  return ((x > 1) && z);
+valid D = do
+  (x,y) <- current;
+  m <- mine
+  e <- elementIs (x-1, y)
+  z <- enoughEnergy (energyCost e)
+  return ((x > 1) && z);
+valid C = do 
+  p <- current
+  m <- mine
+  z <- enoughEnergy 10
+  return (z && minerable m p)
+valid S = return True
 
+minerable :: Mine -> Point -> Bool
+minerable (Mine _ _ []) _ = error "Mina vazia"
+minerable (Mine _ _ e) (x,y) = isMaterial e (x-1,y) || isMaterial e (x+1,y) || isMaterial e (x,y-1) || isMaterial e (x,y+1)
+
+isMaterial :: [Line] -> Point -> Bool 
+isMaterial e (x,y)
+  | e !! x !! y == Material 50 ||
+    e !! x !! y == Material 100 || 
+    e !! x !! y == Material 150 || 
+    e !! x !! y == Material 1 = True 
+  | otherwise = False
+
+elementIs :: Point -> ConfM Element
+elementIs (x,y) = do
+  m <- mine
+  return ((elements m !! x) !! y)
+
+energyCost :: Element -> Int
+energyCost e 
+  | e == Rock = 30
+  | e == Earth = 5
+  | otherwise = 1
+
+--Exercício: 12
 updateMine :: Instr -> ConfM ()
 updateMine = undefined
 
+--Exercício: 13
 exec :: Instr -> ConfM ()
 exec = undefined
 
+--Exercício: 14
 initRobot :: Mine -> Robot
-initRobot = undefined
+initRobot m = Robot {
+  energy = 100,
+  position = findEntry (elements m) 0,
+  collected = 0
+}
 
+findEntry  :: [Line] -> Int -> Point
+findEntry [] acc = error "Empty mine"
+findEntry (x:xs) acc
+  | lineHasEntry x = (acc, elemIndex' Entry x)
+  | otherwise = findEntry xs ( acc + 1 )
+  
+elemIndex' :: Eq a => a -> [a] -> Int
+elemIndex' x = fromMaybe (-1) . elemIndex x
+
+--Exercício: 15
 run :: [Instr] -> Mine -> Mine
 run = undefined
 
+--Exercício: 16
 readLDM :: String -> IO (Either String Mine)
-readLDM = undefined
+readLDM = undefined 
+-- readLDM file
+--   | strOrExc <- try $ readFile file
+--       Left error "nao foi possivel abrir arquivo"
+--       Right (map fst (runParser pMine strOrExc))
 
+--Exercício: 17
 readLCR :: String -> IO (Either String [Instr])
 readLCR = undefined
 
-
--- -- exercicio 11
-
--- valid :: Instr -> ConfM Bool
--- valid L = do
---   (r, m) <- get
---   return (position r > 1)
-
--- valid R = do 
---   (r, m) <- get
---   return (position r < columns m)
-
--- valid U = do 
---   (r, m) <- get
---   return (position r > 1)
-
--- valid D = do 
---   (r, m) <- get
---   return (position r < linhas m)
-
--- valid C = do 
---   (r, m) <- get
---   return (elements m !! (position r) !! (position r) == Earth)
-
--- valid S = do
---   (r, m) <- get
---   return (energy r < 100)
-
--- Exercício: 5
+--Exercício: 5
 exampleMine :: Mine
 exampleMine = Mine {
   linhas = 15,
@@ -308,43 +358,44 @@ exampleMine = Mine {
             ]
 }
 
-sampleRobot :: Robot
-sampleRobot = Robot {
-                energy = 100,
-                position = (1,1),
-                collected = 0
-}
+-- VARIAVEIS DE TESTE
+-- sampleRobot :: Robot
+-- sampleRobot = Robot {
+--                 energy = 100,
+--                 position = (1,1),
+--                 collected = 0
+-- }
 
-sLine1 :: Line 
-sLine1 = [Wall, Wall, Entry, Wall, Wall, Wall]
+-- sLine1 :: Line 
+-- sLine1 = [Wall, Wall, Entry, Wall, Wall, Wall]
 
-sLine2 :: Line 
-sLine2 = [Entry, Wall, Wall, Wall, Wall, Wall]
+-- sLine2 :: Line 
+-- sLine2 = [Entry, Wall, Wall, Wall, Wall, Wall]
 
-sLine3 :: Line 
-sLine3 = [Wall, Wall, Wall, Wall, Wall, Entry]
+-- sLine3 :: Line 
+-- sLine3 = [Wall, Wall, Wall, Wall, Wall, Entry]
 
-sLine4 :: Line 
-sLine4 = [Wall, Wall, Wall, Wall, Wall, Wall]
+-- sLine4 :: Line 
+-- sLine4 = [Wall, Wall, Wall, Wall, Wall, Wall]
 
-sArrayofLines :: [Line]
-sArrayofLines = [sLine1, sLine4, sLine4]
+-- sArrayofLines :: [Line]
+-- sArrayofLines = [sLine1, sLine4, sLine4]
 
-sAL1 :: [Line]
-sAL1 = [sLine1, sLine4, sLine4, sLine4]
+-- sAL1 :: [Line]
+-- sAL1 = [sLine1, sLine4, sLine4, sLine4]
 
-sAL2 :: [Line]
-sAL2 = [sLine4, sLine4, sLine4, sLine1]
+-- sAL2 :: [Line]
+-- sAL2 = [sLine4, sLine4, sLine4, sLine1]
 
-sMine :: Mine
-sMine = Mine{
-    linhas = 3,
-    columns = 6,
-    elements = sArrayofLines
-}
+-- sMine :: Mine
+-- sMine = Mine{
+--     linhas = 3,
+--     columns = 6,
+--     elements = sArrayofLines
+-- }
 
-sampleConf :: Conf
-sampleConf = (sampleRobot, exampleMine)
+-- sampleConf1 :: Conf
+-- sampleConf1 = (sampleRobot, exampleMine)
 
--- sampleConfM :: ConfM
--- sampleConfM = ?
+-- sampleConf2 :: Conf
+-- sampleConf2 =  (Robot 0 (0,0) 0, Mine 0 0 [])
