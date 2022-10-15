@@ -425,15 +425,18 @@ initRobot m = Robot {
 
 -- exercicio 15
 run :: [Instr] -> Mine -> Mine
-run [] m = m
+run [] (Mine linhas colunas []) = (Mine linhas colunas [])
 run (i:is) m = run is (exec i m)
 
 --exercicio 16
 readLDM :: String -> IO (Either String Mine)
-readLDM = do 
-  file <- readFile "file.txt"
-  return (parseLDM file)
-
+readLDM arqNome = do
+    s <- readFile (arqNome) 
+    let res = runParser (pMine) s
+    mina <- fst $ head 
+    if validMine mina
+    then return (Right mina)
+    else return (Left "não foi possível realizar a leitura deste arquivo")
 -- exercicio 17
 readLCR :: String -> IO (Either String [Instr])
 readLCR = do 
