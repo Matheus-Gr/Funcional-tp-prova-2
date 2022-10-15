@@ -256,33 +256,95 @@ readLDM = undefined
 readLCR :: String -> IO (Either String [Instr])
 readLCR = undefined
 
+--exercicio 10
+current :: ConfM Point
+current = do
+  (r, m) <- get
+  return (position r)
+
+mine :: ConfM Mine
+mine = do
+  (r, m) <- get
+  return m
+
+enoughEnergy :: Int -> ConfM Bool
+enoughEnergy n = do
+  (r, m) <- get
+  return (energy r >= n)
+
 
 -- -- exercicio 11
 
--- valid :: Instr -> ConfM Bool
--- valid L = do
---   (r, m) <- get
---   return (position r > 1)
+valid :: Instr -> ConfM Bool
+valid L
+  = do
+    (x, y) <- current
+    mina <- mine 
+    element <- getElement mina (x-1, y)
+    energy <- enoughEnergy energiaNecessaria element
+    return energy && verificaParede mina (x-1, y)
+      where
+        energiaNecessaria :: Element -> Int
+        energiaNecessaria x = 
+          if(x == Rock) then 30
+          else if(x == Earth) then 5
+          else 1
 
--- valid R = do 
---   (r, m) <- get
---   return (position r < columns m)
+valid R
+  = do
+    (x, y) <- current
+    mina <- mine 
+    element <- getElement mina (x+1,y)
+    energy <- enoughEnergy energiaNecessaria element
+    return energy && verificaParede mina (x+1, y)
+      where
+        energiaNecessaria :: Element -> Int
+        energiaNecessaria x = 
+          if(x == Rock) then 30
+          else if(x == Earth) then 5
+          else 1
 
--- valid U = do 
---   (r, m) <- get
---   return (position r > 1)
+valid U
+  = do
+    (x, y) <- current
+    mina <- mine 
+    element <- getElement mina (x,y-1)
+    energy <- enoughEnergy energiaNecessaria element
+    return energy && verificaParede mina (x, y-1) 
+      where
+        energiaNecessaria :: Element -> Int
+        energiaNecessaria x = 
+          if(x == Rock) then 30
+          else if(x == Earth) then 5
+          else 1
 
--- valid D = do 
---   (r, m) <- get
---   return (position r < linhas m)
+valid D
+  = do
+    (x, y) <- current
+    mina <- mine 
+    element <- getElement mina (x,y+1)
+    energy <- enoughEnergy energiaNecessaria element
+    return energy && verificaParede mina (x, y+1)
+      where
+        energiaNecessaria :: Element -> Int
+        energiaNecessaria x = 
+          if(x == Rock) then 30
+          else if(x == Earth) then 5
+          else 1
 
--- valid C = do 
---   (r, m) <- get
---   return (elements m !! (position r) !! (position r) == Earth)
+valid C
+ = do
+  energy <- enoughEnergy 10
+  (x, y) <- current
+  mina <- mine
+  return energy && verificaMateriais mina (x,y)
+  where
+    verificaMateriais :: Mine -> Point -> Bool
+    verificaMateriais m (x, y) = temMinerio m (x-1,y) || temMinerio m (x+1,y) || temMinerio m (x,y-1) || temMinerio m (x,y+1)
 
--- valid S = do
---   (r, m) <- get
---   return (energy r < 100)
+
+valid S = return True
+
 
 -- Exercício: 5
 exampleMine :: Mine
